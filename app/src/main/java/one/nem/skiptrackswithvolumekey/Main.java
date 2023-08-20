@@ -22,7 +22,7 @@ public class Main implements IXposedHookLoadPackage {
     private static boolean isLongPressing = false;
     private static AudioManager audioManager;
     // For debug
-    final private static boolean IS_DEBUG = true;
+    final private static boolean IS_DEBUG = false;
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
