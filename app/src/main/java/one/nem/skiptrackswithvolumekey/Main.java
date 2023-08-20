@@ -123,16 +123,6 @@ public class Main implements IXposedHookLoadPackage {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) { //TODO: 効率悪すぎるのでなんとかする
-            if (isDebugMode) XposedBridge.log("DEBUG: " + event);
-            KeyEvent keyEventPrev_Dn = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
-            keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventPrev_Dn);
-            audioManager.dispatchMediaKeyEvent(keyEventPrev_Dn);
-
-            KeyEvent keyEventPrev_Up = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
-            keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventPrev_Up);
-            audioManager.dispatchMediaKeyEvent(keyEventPrev_Up);
-        }
-        else {
             KeyEvent keyEventNext_Dn = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT, 0);
             if (isDebugMode) XposedBridge.log("DEBUG: " + event);
             keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventNext_Dn);
@@ -141,6 +131,17 @@ public class Main implements IXposedHookLoadPackage {
             KeyEvent keyEventNext_Up = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT, 0);
             keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventNext_Up);
             audioManager.dispatchMediaKeyEvent(keyEventNext_Up);
+        }
+        else {
+            if (isDebugMode) XposedBridge.log("DEBUG: " + event);
+            KeyEvent keyEventPrev_Dn = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
+            keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventPrev_Dn);
+            audioManager.dispatchMediaKeyEvent(keyEventPrev_Dn);
+
+            KeyEvent keyEventPrev_Up = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
+            keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventPrev_Up);
+            audioManager.dispatchMediaKeyEvent(keyEventPrev_Up);
+
         }
     }
 }
