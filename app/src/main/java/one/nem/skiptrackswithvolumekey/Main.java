@@ -24,9 +24,9 @@ public class Main implements IXposedHookLoadPackage {
     // For debug
     final private static boolean IS_DEBUG = true;
     @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
-        Class<?> PhoneWindowManagerClass = null;
+        Class<?> PhoneWindowManagerClass;
         try {
             PhoneWindowManagerClass = XposedHelpers.findClass("com.android.server.policy.PhoneWindowManager", loadPackageParam.classLoader);
         }
@@ -37,7 +37,7 @@ public class Main implements IXposedHookLoadPackage {
 
         XposedHelpers.findAndHookMethod(PhoneWindowManagerClass, "interceptKeyBeforeQueueing", KeyEvent.class, int.class, new XC_MethodHook() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            protected void beforeHookedMethod(MethodHookParam param) {
                 KeyEvent event = (KeyEvent) param.args[0];
                 int keyCode = event.getKeyCode();
 
@@ -75,14 +75,11 @@ public class Main implements IXposedHookLoadPackage {
 
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     if (!isLongPressing) {
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!isLongPressing) {
-                                    isLongPressing = true;
-                                    if (IS_DEBUG) XposedBridge.log("DEBUG: LogPoint1");
-                                    handleLongPress(event);
-                                }
+                        mHandler.postDelayed(() -> {
+                            if (!isLongPressing) {
+                                isLongPressing = true;
+                                if (IS_DEBUG) XposedBridge.log("DEBUG: LogPoint1");
+                                handleLongPress(event);
                             }
                         }, ViewConfiguration.getLongPressTimeout());
                     }
