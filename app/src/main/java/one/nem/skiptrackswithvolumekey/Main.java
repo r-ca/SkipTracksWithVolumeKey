@@ -3,7 +3,6 @@ package one.nem.skiptrackswithvolumekey;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -11,9 +10,6 @@ import android.view.KeyEvent;
 import android.view.ViewConfiguration;
 
 import androidx.annotation.RequiresApi;
-
-import java.lang.reflect.Method;
-import java.security.Key;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -26,23 +22,19 @@ public class Main implements IXposedHookLoadPackage {
     private static boolean isLongPressing = false;
     private static AudioManager audioManager;
     // For debug
-    final private static boolean isDebugMode = true;
+    final private static boolean IS_DEBUG = true;
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
 
-        // 1
         Class<?> PhoneWindowManagerClass = null;
         try {
             PhoneWindowManagerClass = XposedHelpers.findClass("com.android.server.policy.PhoneWindowManager", loadPackageParam.classLoader);
         }
         catch (Throwable t) {
-            XposedBridge.log("WARN  : " + t);
+            if (IS_DEBUG) XposedBridge.log("WARN  : " + t);
             return;
         }
 
-//        if (PhoneWindowManagerClass == null) {
-//            XposedBridge.log("WARN  : PhoneWindowManagerClass is null");
-//        }
         XposedHelpers.findAndHookMethod(PhoneWindowManagerClass, "interceptKeyBeforeQueueing", KeyEvent.class, int.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -62,7 +54,7 @@ public class Main implements IXposedHookLoadPackage {
                 PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
                 if (powerManager.isInteractive()) {
                     //TODO
-                    if (isDebugMode) XposedBridge.log("DEBUG: Device is Interactive.");
+                    if (IS_DEBUG) XposedBridge.log("DEBUG: Device is Interactive.");
                     return;
                 }
 
@@ -72,14 +64,14 @@ public class Main implements IXposedHookLoadPackage {
                 // アクティブなミュージックセッションがない場合は処理に干渉しない
                 if (!audioManager.isMusicActive()) {
                     //TODO
-                    if (isDebugMode) XposedBridge.log("DEBUG: No active music sessions.");
+                    if (IS_DEBUG) XposedBridge.log("DEBUG: No active music sessions.");
                     return;
                 }
 
                 Handler mHandler = (Handler) XposedHelpers.getObjectField(param.thisObject, "mHandler");
 
-                if (isDebugMode) XposedBridge.log("KeyEvent: " + event);
-                if (isDebugMode) XposedBridge.log("KeyCode: " + keyCode);
+                if (IS_DEBUG) XposedBridge.log("KeyEvent: " + event);
+                if (IS_DEBUG) XposedBridge.log("KeyCode: " + keyCode);
 
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     if (!isLongPressing) {
@@ -88,7 +80,7 @@ public class Main implements IXposedHookLoadPackage {
                             public void run() {
                                 if (!isLongPressing) {
                                     isLongPressing = true;
-                                    if (isDebugMode) XposedBridge.log("DEBUG: LogPoint1");
+                                    if (IS_DEBUG) XposedBridge.log("DEBUG: LogPoint1");
                                     handleLongPress(event);
                                 }
                             }
@@ -112,7 +104,7 @@ public class Main implements IXposedHookLoadPackage {
                         AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER, 0);
     }
     private void handleLongPress(KeyEvent event) {
-        if (isDebugMode) XposedBridge.log("DEBUG: LongPress Detected!");
+        if (IS_DEBUG) XposedBridge.log("DEBUG: LongPress Detected!");
         Intent keyIntent = null;
 
         try { //Get KeyIntent
@@ -122,9 +114,9 @@ public class Main implements IXposedHookLoadPackage {
             XposedBridge.log("ERROR: " + t);
         }
 
-        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) { //TODO: 効率悪すぎるのでなんとかする
+        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) { //TODO: もうちょっと簡略に書けるのでなおす
             KeyEvent keyEventNext_Dn = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT, 0);
-            if (isDebugMode) XposedBridge.log("DEBUG: " + event);
+            if (IS_DEBUG) XposedBridge.log("DEBUG: " + event);
             keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventNext_Dn);
             audioManager.dispatchMediaKeyEvent(keyEventNext_Dn);
 
@@ -133,7 +125,7 @@ public class Main implements IXposedHookLoadPackage {
             audioManager.dispatchMediaKeyEvent(keyEventNext_Up);
         }
         else {
-            if (isDebugMode) XposedBridge.log("DEBUG: " + event);
+            if (IS_DEBUG) XposedBridge.log("DEBUG: " + event);
             KeyEvent keyEventPrev_Dn = new KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
             keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEventPrev_Dn);
             audioManager.dispatchMediaKeyEvent(keyEventPrev_Dn);
