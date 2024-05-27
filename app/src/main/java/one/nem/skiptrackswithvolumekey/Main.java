@@ -49,7 +49,7 @@ public class Main implements IXposedHookLoadPackage {
 
                 Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
 
-                // 画面が点灯していない場合は処理に干渉しない
+                // 画面が点灯している場合(=isInteractive()がtrueの場合)は処理に干渉しない
                 // PowerManagerを取得
                 PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
                 if (powerManager.isInteractive()) {
@@ -87,9 +87,9 @@ public class Main implements IXposedHookLoadPackage {
                     isLongPressing = false;
                     adjustVolume(event);
                     mHandler.removeCallbacksAndMessages(null);
-                    param.setResult(0);
+                    param.setResult(null); // 完全に終了させる
                 }
-                param.setResult(0);
+                param.setResult(null);
             }
         });
     }
